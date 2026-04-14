@@ -1,0 +1,11 @@
+export { default as Home } from './Home';
+export { default as Products } from './Products';
+export { default as ProductDetail } from './ProductDetail';
+export { default as Supermarkets } from './Supermarkets';
+export { default as Cart } from './Cart';
+export { default as Orders } from './Orders';
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as VendorDashboard } from './vendor/VendorDashboard';
+export { default as AddProduct } from './vendor/AddProduct';
+export { default as RegisterSupermarket } from './vendor/RegisterSupermarket';
