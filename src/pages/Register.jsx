@@ -105,8 +105,7 @@ const Register = () => {
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="text-2xl mb-1">🛒</div>
-                  <div className="font-medium text-gray-900">Shop</div>
+                  <div className="font-medium text-gray-900">Customer</div>
                   <div className="text-xs text-gray-500">Buy products</div>
                 </button>
                 <button
@@ -118,8 +117,7 @@ const Register = () => {
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="text-2xl mb-1">🏪</div>
-                  <div className="font-medium text-gray-900">Sell</div>
+                  <div className="font-medium text-gray-900">Seller</div>
                   <div className="text-xs text-gray-500">Own a store</div>
                 </button>
               </div>

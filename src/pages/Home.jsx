@@ -76,7 +76,7 @@ const Home = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for products..."
-                    className="w-full px-5 py-4 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full px-5 py-4 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white"
                   />
                   <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -84,7 +84,7 @@ const Home = () => {
                 </div>
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95"
+                  className="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer"
                 >
                   Search
                 </button>
@@ -134,7 +134,7 @@ const Home = () => {
               <Link
                 key={category.name}
                 to={`/products?category=${category.name}`}
-                className={`p-6 rounded-xl ${category.color} hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group`}
+                className={`p-6 rounded-xl ${category.color} hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group cursor-pointer`}
               >
                 <div className="text-4xl mb-3">{category.icon}</div>
                 <h3 className="font-semibold text-lg group-hover:scale-105 transition-transform">
@@ -155,7 +155,7 @@ const Home = () => {
             </div>
             <Link
               to="/products"
-              className="text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1"
+              className="text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1 cursor-pointer"
             >
               View All
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +216,7 @@ const Home = () => {
                 <p className="text-sm text-gray-600 line-clamp-2">{supermarket.description}</p>
                 <Link
                   to={`/products?supermarket=${supermarket._id}`}
-                  className="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-700"
+                  className="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-700 cursor-pointer"
                 >
                   View Products
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +238,7 @@ const Home = () => {
           </p>
           <Link
             to="/register?role=vendor"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl transition-all duration-200 hover:shadow-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold rounded-xl transition-all duration-200 hover:shadow-lg cursor-pointer"
           >
             Register as Vendor
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
