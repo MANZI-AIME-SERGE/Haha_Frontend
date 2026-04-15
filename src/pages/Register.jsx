@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, useToast } from '../context';
 import { Input, Button, Select } from '../components/ui';
@@ -50,7 +50,7 @@ const Register = () => {
 
     try {
       setLoading(true);
-      await register({
+      const data = await register({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -58,10 +58,12 @@ const Register = () => {
         role: formData.role,
       });
       success('Registration successful!');
-      if (formData.role === 'vendor') {
+      if (data.user.role === 'vendor') {
         navigate('/vendor/dashboard');
+      } else if (data.user.role === 'admin') {
+        navigate('/admin/dashboard');
       } else {
-        navigate('/');
+        navigate('/customer');
       }
     } catch (err) {
       setErrors({ submit: err.response?.data?.message || 'Registration failed' });
@@ -71,13 +73,14 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 mt-[5%]">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 justify-center mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+            <span className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-2xl">H</span>
-            </div>
+            </span>
+            <span className="text-2xl font-bold text-gray-800">HAHA</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Create an account</h1>
           <p className="text-gray-600 mt-2">Join HAHA Platform today</p>

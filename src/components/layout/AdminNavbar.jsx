@@ -24,9 +24,9 @@ const AdminNavbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             <Link to="/admin/dashboard" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">H</span>
-              </div>
+              <span className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-gray-800 font-bold text-xl">H</span>
+              </span>
               <span className="text-xl font-bold text-white">HAHA</span>
               <span className="px-2 py-1 text-xs bg-red-500 text-white rounded-full font-semibold">Admin</span>
             </Link>

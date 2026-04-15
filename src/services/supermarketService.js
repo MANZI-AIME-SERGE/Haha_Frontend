@@ -22,4 +22,14 @@ export const supermarketService = {
     });
     return response.data;
   },
+
+  updateSupermarket: async (id, data) => {
+    const response = await api.put(`/supermarkets/${id}`, data);
+    return response.data;
+  },
+
+  deleteSupermarket: async (id) => {
+    const response = await api.delete(`/supermarkets/${id}`);
+    return response.data;
+  },
 };

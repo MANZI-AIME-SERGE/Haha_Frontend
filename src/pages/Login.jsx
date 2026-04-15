@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, useToast } from '../context';
 import { Input, Button } from '../components/ui';
 
@@ -12,9 +12,6 @@ const Login = () => {
   const { login } = useAuth();
   const { success } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from || '/';
 
   const validate = () => {
     const newErrors = {};
@@ -31,24 +28,41 @@ const Login = () => {
 
     try {
       setLoading(true);
-      await login(email, password);
+      setErrors({});
+      
+      const data = await login(email, password);
+      
+      if (!data || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       success('Login successful!');
-      navigate(from, { replace: true });
+      
+      if (data.user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (data.user.role === 'vendor') {
+        navigate('/vendor/dashboard', { replace: true });
+      } else {
+        navigate('/customer', { replace: true });
+      }
     } catch (err) {
-      setErrors({ submit: err.response?.data?.message || 'Login failed' });
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Login failed. Please check your credentials.';
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 mt-[5%]">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
+          <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 justify-center mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+            <span className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-2xl">H</span>
-            </div>
+            </span>
+            <span className="text-2xl font-bold text-gray-800">HAHA</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-600 mt-2">Sign in to your account</p>

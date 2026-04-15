@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useAuth, useCart } from '../../context';
+import { useCart } from '../../context';
 
 const CustomerCart = () => {
   const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();

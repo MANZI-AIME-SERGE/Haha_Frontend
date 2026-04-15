@@ -4,7 +4,7 @@ import { useAuth, useCart } from '../../context';
 
 const CustomerNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { getCartCount } = useCart();
   const location = useLocation();
   const cartCount = getCartCount();
@@ -24,9 +24,9 @@ const CustomerNavbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             <Link to="/customer" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">H</span>
-              </div>
+              </span>
               <span className="text-xl font-bold text-gray-800">HAHA</span>
             </Link>
 

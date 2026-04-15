@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productService, supermarketService } from '../services';
 import { ProductCard, ProductGridSkeleton } from '../components/ui';
+import heroImage from '../assets/hello.png';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -111,7 +112,7 @@ const Home = () => {
             <div className="hidden md:block relative">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-blue-500/20 rounded-3xl" />
               <img
-                src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=500&fit=crop"
+                src={heroImage}
                 alt="Supermarket"
                 className="relative rounded-3xl shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-500"
               />

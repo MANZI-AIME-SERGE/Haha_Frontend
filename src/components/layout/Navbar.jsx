@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth, useCart } from '../../context';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const { getCartCount } = useCart();

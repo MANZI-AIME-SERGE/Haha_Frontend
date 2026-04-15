@@ -32,9 +32,9 @@ const LandingNavbar = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">H</span>
-                </div>
+                </span>
                 <span className="text-xl font-bold text-gray-800">HAHA</span>
               </Link>
 

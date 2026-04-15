@@ -22,9 +22,9 @@ const VendorNavbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             <Link to="/vendor/dashboard" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+              <span className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
                 <span className="text-blue-600 font-bold text-xl">H</span>
-              </div>
+              </span>
               <span className="text-xl font-bold text-white">HAHA</span>
               <span className="px-2 py-1 text-xs bg-yellow-500 text-gray-900 rounded-full font-semibold">Vendor</span>
             </Link>

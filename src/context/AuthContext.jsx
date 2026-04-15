@@ -1,20 +1,12 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { authService } from '../services';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => authService.getStoredUser());
+  const [loading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const storedUser = authService.getStoredUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setLoading(false);
-  }, []);
 
   const login = async (email, password) => {
     try {
