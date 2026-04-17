@@ -18,11 +18,12 @@ const Products = () => {
 
   useEffect(() => {
     fetchProducts();
+    const pollInterval = setInterval(fetchProducts, 10000);
+    return () => clearInterval(pollInterval);
   }, [category, supermarket, search]);
 
   const fetchProducts = async () => {
     try {
-      setLoading(true);
       const params = {};
       if (category && category !== 'All') params.category = category;
       if (supermarket) params.supermarketId = supermarket;

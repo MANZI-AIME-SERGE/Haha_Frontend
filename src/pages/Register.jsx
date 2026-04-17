@@ -102,26 +102,26 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, role: 'customer' })}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
                     formData.role === 'customer'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                   }`}
                 >
-                  <div className="font-medium text-gray-900">Customer</div>
-                  <div className="text-xs text-gray-500">Buy products</div>
+                  <div className="font-semibold text-gray-900">Customer</div>
+                  <div className="text-sm text-gray-500">Buy products</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, role: 'vendor' })}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
                     formData.role === 'vendor'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                   }`}
                 >
-                  <div className="font-medium text-gray-900">Seller</div>
-                  <div className="text-xs text-gray-500">Own a store</div>
+                  <div className="font-semibold text-gray-900">Seller</div>
+                  <div className="text-sm text-gray-500">Own a store</div>
                 </button>
               </div>
             </div>
@@ -190,7 +190,7 @@ const Register = () => {
               </label>
             </div>
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
+            <Button type="submit" loading={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200" size="lg">
               Create Account
             </Button>
           </form>

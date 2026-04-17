@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useCart } from '../../context';
+import { useCart, useAuth } from '../../context';
 
 const LandingNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const { getCartCount } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const cartCount = getCartCount();
@@ -14,6 +16,7 @@ const LandingNavbar = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
     }
   };
 
@@ -27,83 +30,104 @@ const LandingNavbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-                <span className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-6">
+              <Link to="/" className="flex items-center gap-3 cursor-pointer">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md animate-float">
                   <span className="text-white font-bold text-xl">H</span>
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                  HAHA
                 </span>
-                <span className="text-xl font-bold text-gray-800">HAHA</span>
               </Link>
 
-              <form onSubmit={handleSearch} className="hidden md:block ml-[180px]">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-64 px-3 py-1 pr-8 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white shadow-sm"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
-              </form>
-
-              <div className="hidden lg:flex items-center gap-1">
+              <nav className="hidden lg:flex items-center gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive(link.to)
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                        ? 'text-green-600 bg-green-50'
+                        : 'text-gray-600 hover:text-green-600 hover:bg-gray-50'
                     }`}
                   >
                     {link.label}
                   </Link>
                 ))}
-              </div>
+              </nav>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Link
-                to="/cart"
-                className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className={`relative w-full transition-all duration-300 ${searchFocused ? 'transform scale-[1.02]' : ''}`}>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search products, supermarkets..."
+                  className={`w-full pl-12 pr-4 py-2.5 rounded-full border-2 bg-white text-sm
+                    placeholder-gray-400 transition-all duration-300
+                    ${searchFocused 
+                      ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]' 
+                      : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                />
+                <svg 
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${searchFocused ? 'text-green-500' : 'text-gray-400'}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
-
-              <div className="hidden md:flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Register
-                </Link>
               </div>
+            </form>
+
+            <div className="flex items-center gap-3">
+              {isAuthenticated ? (
+                <Link
+                  to="/customer/cart"
+                  className="relative p-2 text-gray-600 hover:text-green-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-green-600 border-2 border-green-500 rounded-full hover:bg-green-50 hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-600 rounded-full hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Register
+                  </Link>
+                </>
+              )}
+
+              <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-full hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span className="hidden sm:inline">App</span>
+              </button>
 
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -119,60 +143,71 @@ const LandingNavbar = () => {
               </button>
             </div>
           </div>
+        </div>
 
-          {isMobileMenuOpen && (
-            <div className="lg:hidden mt-4 pb-2 space-y-3">
-              <form onSubmit={handleSearch} className="flex">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
-                />
-                <button
-                  type="submit"
-                  className="px-4 bg-blue-600 text-white rounded-r-lg font-medium hover:bg-blue-700"
-                >
-                  Search
-                </button>
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+              <form onSubmit={handleSearch}>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search products..."
+                    className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-gray-200 focus:border-green-500 focus:outline-none transition-all"
+                  />
+                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
               </form>
-              <div className="flex gap-1">
+
+              <nav className="space-y-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.to}
                     to={link.to}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex-1 text-center px-3 py-2 text-sm font-medium rounded-lg ${
+                    className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       isActive(link.to)
-                        ? 'text-blue-600 bg-blue-50'
+                        ? 'text-green-600 bg-green-50'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {link.label}
                   </Link>
                 ))}
-              </div>
-              <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <Link
-                  to="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex-1 text-center px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex-1 text-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg"
-                >
-                  Register
-                </Link>
-              </div>
+              </nav>
+
+              {!isAuthenticated && (
+                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-green-600 border-2 border-green-500 rounded-xl hover:bg-green-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-600 rounded-xl hover:shadow-lg"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Register
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </header>
     </>
   );
 };

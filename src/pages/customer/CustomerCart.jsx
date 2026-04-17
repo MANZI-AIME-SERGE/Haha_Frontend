@@ -1,11 +1,67 @@
-import { Link } from 'react-router-dom';
-import { useCart } from '../../context';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart, useAuth, useToast } from '../../context';
+import { orderService } from '../../services';
+import { Input } from '../../components/ui';
 
 const CustomerCart = () => {
   const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { isAuthenticated, user } = useAuth();
+  const { success, error } = useToast();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    street: user?.address?.street || '',
+    district: user?.address?.district || '',
+    city: user?.address?.city || 'Kigali',
+    phone: user?.phone || '',
+  });
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+
   const subtotal = getCartTotal();
   const deliveryFee = cart.length > 0 ? 1000 : 0;
   const total = subtotal + deliveryFee;
+
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/customer/cart' } });
+      return;
+    }
+
+    if (!deliveryAddress.street || !deliveryAddress.district || !deliveryAddress.phone) {
+      error('Please fill in all delivery address fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const orderData = {
+        items: cart.map((item) => ({
+          productId: item._id,
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name,
+        })),
+        deliveryAddress,
+        paymentMethod,
+        totalAmount: total,
+      };
+
+      await orderService.createOrder(orderData);
+      success('Order placed successfully! The vendor has been notified.');
+      clearCart();
+      setShowCheckout(false);
+      navigate('/customer/orders');
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to place order');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -23,6 +79,9 @@ const CustomerCart = () => {
             className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             Browse Products
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </Link>
         </div>
       </div>
@@ -66,7 +125,7 @@ const CustomerCart = () => {
                     <span className="w-12 text-center font-medium">{item.quantity}</span>
                     <button onClick={() => updateQuantity(item._id, item.quantity + 1)} className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100">+</button>
                   </div>
-                  <p className="text-lg font-bold text-blue-600">RWF {(item.price * item.quantity).toLocaleString()}</p>
+                  <p className="text-lg font-bold text-green-600">RWF {(item.price * item.quantity).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -86,17 +145,150 @@ const CustomerCart = () => {
             </div>
             <div className="border-t pt-3 flex justify-between text-lg font-bold text-gray-900">
               <span>Total</span>
-              <span className="text-blue-600">RWF {total.toLocaleString()}</span>
+              <span className="text-green-600">RWF {total.toLocaleString()}</span>
             </div>
           </div>
-          <Link
-            to="/customer/checkout"
-            className="block w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-center"
+          <button
+            onClick={() => setShowCheckout(true)}
+            className="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
           >
-            Proceed to Checkout
-          </Link>
+            Place Order
+          </button>
         </div>
       </div>
+
+      {showCheckout && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">Checkout</h2>
+                </div>
+                <button
+                  onClick={() => setShowCheckout(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleCheckout} className="space-y-4">
+                <Input
+                  label="Street Address"
+                  value={deliveryAddress.street}
+                  onChange={(e) => setDeliveryAddress({ ...deliveryAddress, street: e.target.value })}
+                  placeholder="KG 123 St, Kigali"
+                  required
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="District"
+                    value={deliveryAddress.district}
+                    onChange={(e) => setDeliveryAddress({ ...deliveryAddress, district: e.target.value })}
+                    placeholder="Nyarugenge"
+                    required
+                  />
+                  <Input
+                    label="City"
+                    value={deliveryAddress.city}
+                    onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
+                    placeholder="Kigali"
+                    required
+                  />
+                </div>
+                <Input
+                  label="Phone Number"
+                  type="tel"
+                  value={deliveryAddress.phone}
+                  onChange={(e) => setDeliveryAddress({ ...deliveryAddress, phone: e.target.value })}
+                  placeholder="+250 788 000 000"
+                  required
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Payment Method
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'cash', label: 'Cash on Delivery', icon: '💵' },
+                      { value: 'mtn_mobile', label: 'MTN Mobile Money', icon: '📱' },
+                      { value: 'airtel_money', label: 'Airtel Money', icon: '📱' },
+                    ].map((method) => (
+                      <label
+                        key={method.value}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                          paymentMethod === method.value
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 hover:border-green-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={method.value}
+                          checked={paymentMethod === method.value}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          className="text-green-600 focus:ring-green-500"
+                        />
+                        <span className="text-lg">{method.icon}</span>
+                        <span className="text-gray-700 font-medium">{method.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                  <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
+                  {cart.map((item) => (
+                    <div key={item._id} className="flex justify-between text-sm">
+                      <span className="text-gray-600">{item.name} x {item.quantity}</span>
+                      <span className="font-medium">RWF {(item.price * item.quantity).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total</span>
+                    <span className="text-green-600">RWF {total.toLocaleString()}</span>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Processing Order...
+                      </span>
+                    ) : (
+                      <>
+                        Confirm Order
+                        <svg className="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

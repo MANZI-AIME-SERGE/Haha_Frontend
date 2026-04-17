@@ -1,23 +1,32 @@
 import { useState } from 'react';
-import { useCart, useToast } from '../../context';
+import { useNavigate } from 'react-router-dom';
+import { useCart, useToast, useAuth } from '../../context';
 
-const ProductCard = ({ product, index = 0 }) => {
+const LandingProductCard = ({ product, index = 0, onLoginRequired }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isOrdering, setIsOrdering] = useState(false);
   const { addToCart } = useCart();
   const { success } = useToast();
-  const [isAdding, setIsAdding] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const supermarketName = product.supermarketId?.name || 'Unknown Store';
 
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    if (product.stock === 0) return;
-    
-    setIsAdding(true);
+  const handleOrder = (e) => {
+    e.stopPropagation();
+    if (product.stock === 0 || isOrdering) return;
+
+    if (!isAuthenticated) {
+      onLoginRequired?.();
+      return;
+    }
+
+    setIsOrdering(true);
     addToCart(product);
     success(`${product.name} added to cart!`);
-    
-    setTimeout(() => setIsAdding(false), 600);
+    navigate('/cart');
+
+    setTimeout(() => setIsOrdering(false), 600);
   };
 
   const getCategoryColor = (category) => {
@@ -33,7 +42,7 @@ const ProductCard = ({ product, index = 0 }) => {
 
   return (
     <div
-      className="bg-white rounded-2xl overflow-hidden border border-gray-100 group hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-xl relative"
+      className="bg-white rounded-2xl overflow-hidden border border-gray-100 group hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-xl"
       style={{ animationDelay: `${index * 100}ms` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -50,17 +59,14 @@ const ProductCard = ({ product, index = 0 }) => {
           }}
         />
         
-        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Category Badge */}
         <div className="absolute top-3 left-3">
           <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full bg-gradient-to-r ${getCategoryColor(product.category)} shadow-lg`}>
             {product.category}
           </span>
         </div>
 
-        {/* Stock Badges */}
         {product.stock <= 5 && product.stock > 0 && (
           <div className="absolute top-3 right-3 animate-pulse">
             <span className="px-3 py-1 text-xs font-semibold text-yellow-900 bg-yellow-400 rounded-full shadow-lg">
@@ -71,22 +77,15 @@ const ProductCard = ({ product, index = 0 }) => {
         
         {product.stock === 0 && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-red-500/20 flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              </div>
-              <span className="px-4 py-2 text-white font-bold bg-red-600 rounded-lg shadow-lg">
-                Out of Stock
-              </span>
-            </div>
+            <span className="px-4 py-2 text-white font-bold bg-red-600 rounded-lg shadow-lg">
+              Out of Stock
+            </span>
           </div>
         )}
       </div>
       
       <div className="p-5">
-        <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-green-600 transition-colors line-clamp-1">
+        <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1">
           {product.name}
         </h3>
         
@@ -110,33 +109,23 @@ const ProductCard = ({ product, index = 0 }) => {
           </div>
           
           <button
-            onClick={handleAddToCart}
-            disabled={product.stock === 0 || isAdding}
+            onClick={handleOrder}
+            disabled={product.stock === 0 || isOrdering}
             className={`
-              relative px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 overflow-hidden
+              px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 overflow-hidden
               ${product.stock === 0
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-lg active:scale-95 hover:scale-105'
               }
-              ${isAdding ? 'scale-95' : ''}
+              ${isOrdering ? 'scale-95' : ''}
             `}
           >
-            <span className={`flex items-center gap-2 transition-all duration-300 ${
-              isAdding ? 'opacity-0 scale-0' : 'opacity-100 scale-100'
-            }`}>
+            <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              Add
+              Order
             </span>
-            {isAdding && (
-              <span className="absolute inset-0 flex items-center justify-center">
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              </span>
-            )}
           </button>
         </div>
       </div>
@@ -144,4 +133,4 @@ const ProductCard = ({ product, index = 0 }) => {
   );
 };
 
-export default ProductCard;
+export default LandingProductCard;

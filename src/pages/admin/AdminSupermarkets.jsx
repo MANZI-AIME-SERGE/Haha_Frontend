@@ -13,8 +13,8 @@ const AdminSupermarkets = () => {
   const fetchSupermarkets = async () => {
     try {
       setLoading(true);
-      const res = await supermarketService.getSupermarkets().catch(() => ({ data: { supermarkets: [] } }));
-      setSupermarkets(res.data.supermarkets || []);
+      const res = await supermarketService.getAllSupermarkets();
+      setSupermarkets(res.supermarkets || []);
     } catch (error) {
       console.error('Error fetching supermarkets:', error);
       setSupermarkets([]);
@@ -285,7 +285,7 @@ const AdminSupermarkets = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setSelectedSupermarket(supermarket)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                             title="View Details"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -299,7 +299,7 @@ const AdminSupermarkets = () => {
                               <button
                                 onClick={() => handleApprove(supermarket._id)}
                                 disabled={actionLoading === supermarket._id}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                                 title="Approve"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,7 +309,7 @@ const AdminSupermarkets = () => {
                               <button
                                 onClick={() => handleReject(supermarket._id)}
                                 disabled={actionLoading === supermarket._id}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                                 title="Reject"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +323,7 @@ const AdminSupermarkets = () => {
                             <button
                               onClick={() => handleBlock(supermarket._id, 'active')}
                               disabled={actionLoading === supermarket._id}
-                              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                               title="Block"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,7 +336,7 @@ const AdminSupermarkets = () => {
                             <button
                               onClick={() => handleBlock(supermarket._id, 'blocked')}
                               disabled={actionLoading === supermarket._id}
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                               title="Unblock"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,7 +348,7 @@ const AdminSupermarkets = () => {
                           <button
                             onClick={() => handleDelete(supermarket._id)}
                             disabled={actionLoading === supermarket._id}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                             title="Delete"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

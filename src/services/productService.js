@@ -6,6 +6,11 @@ export const productService = {
     return response.data;
   },
 
+  getAdminProducts: async () => {
+    const response = await api.get('/products/admin/all');
+    return response.data;
+  },
+
   getProductById: async (id) => {
     const response = await api.get(`/products/${id}`);
     return response.data;

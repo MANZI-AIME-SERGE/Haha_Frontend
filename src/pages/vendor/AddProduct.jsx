@@ -162,8 +162,9 @@ const AddProduct = () => {
               <Button
                 type="submit"
                 loading={loading}
-                className="w-full"
+                className="w-full cursor-pointer"
                 size="lg"
+                variant="success"
               >
                 Add Product
               </Button>

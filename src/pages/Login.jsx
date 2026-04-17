@@ -107,7 +107,7 @@ const Login = () => {
               </a>
             </div>
 
-            <Button type="submit" loading={loading} className="w-full cursor-pointer" size="lg">
+            <Button type="submit" loading={loading} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200" size="lg">
               Sign In
             </Button>
           </form>

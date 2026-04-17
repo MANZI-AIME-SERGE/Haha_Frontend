@@ -22,7 +22,6 @@ const VendorDashboard = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [period, setPeriod] = useState('monthly');
   const [salesData, setSalesData] = useState([]);
   const [topProductsData, setTopProductsData] = useState([]);
@@ -34,11 +33,17 @@ const VendorDashboard = () => {
     try {
       setLoading(true);
       const [supermarketRes, productsRes, ordersRes] = await Promise.all([
-        supermarketService.getMySupermarket().catch((e) => { console.error('Supermarket error:', e); return { supermarket: null }; }),
-        productService.getMyProducts().catch((e) => { console.error('Products error:', e); return { products: [] }; }),
-        orderService.getVendorOrders().catch((e) => { console.error('Orders error:', e); return { orders: [] }; }),
+        supermarketService.getMySupermarket().catch(() => null),
+        productService.getMyProducts().catch(() => ({ products: [] })),
+        orderService.getVendorOrders().catch(() => ({ orders: [] })),
       ]);
-      setSupermarket(supermarketRes?.supermarket || null);
+      
+      if (supermarketRes?.success && supermarketRes?.supermarket) {
+        setSupermarket(supermarketRes.supermarket);
+      } else {
+        setSupermarket(null);
+      }
+      
       setProducts(productsRes?.products || []);
       setOrders(ordersRes?.orders || []);
       
@@ -46,6 +51,7 @@ const VendorDashboard = () => {
       setLastRefresh(new Date());
     } catch (err) {
       console.error('Error fetching data:', err);
+      setSupermarket(null);
     } finally {
       setLoading(false);
     }
@@ -170,11 +176,6 @@ const VendorDashboard = () => {
     },
   ];
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -200,9 +201,22 @@ const VendorDashboard = () => {
       <div className='flex items-center justify-between mb-8'>
         <div>
           <h1 className='text-3xl font-bold text-gray-900'>Vendor Dashboard</h1>
-          <p className='text-gray-600 mt-1'>Last updated: {lastRefresh.toLocaleTimeString()}</p>
+          {supermarket && (
+            <p className='text-gray-600 mt-1'>{supermarket.name}</p>
+          )}
         </div>
         <div className='flex items-center gap-4'>
+          {supermarket && (
+            <Link
+              to='/vendor/register-supermarket'
+              className='px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2'
+            >
+              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+              </svg>
+              Add Branch
+            </Link>
+          )}
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
@@ -313,60 +327,6 @@ const VendorDashboard = () => {
         </div>
       </div>
 
-      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 mb-8'>
-        <div className='p-6 border-b border-gray-100'>
-          <div className='flex items-center justify-between'>
-            <h2 className='text-lg font-semibold text-gray-900'>Products ({filteredProducts.length})</h2>
-            <Link
-              to='/vendor/products/add'
-              className='flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm'
-            >
-              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
-              </svg>
-              Add Product
-            </Link>
-          </div>
-        </div>
-        <div className='p-6'>
-          {loading ? (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-              {[1, 2, 3].map((i) => (
-                <div key={i} className='h-48 bg-gray-100 rounded-xl animate-pulse' />
-              ))}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-              {filteredProducts.map((product) => (
-                <div key={product._id} className='border border-gray-100 rounded-xl p-4 hover:shadow-lg transition-shadow'>
-                  <div className='w-full h-32 bg-gray-100 rounded-xl mb-4 overflow-hidden'>
-                    {product.image && (
-                      <img 
-                        src={product.image}
-                        alt={product.name}
-                        className='w-full h-full object-cover'
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                    )}
-                  </div>
-                  <h3 className='font-semibold text-gray-900'>{product.name}</h3>
-                  <p className='text-sm text-gray-500'>{product.category}</p>
-                  <div className='flex items-center justify-between mt-2'>
-                    <span className='font-bold text-green-600'>RWF {product.price?.toLocaleString()}</span>
-                    <span className={`text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className='text-center py-8 text-gray-500'>
-              {searchQuery ? 'No products match your search' : 'No products yet. Add your first product!'}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

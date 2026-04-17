@@ -24,12 +24,17 @@ export const supermarketService = {
   },
 
   updateSupermarket: async (id, data) => {
-    const response = await api.put(`/supermarkets/${id}`, data);
+    const response = await api.put(`/supermarkets/${id}/status`, data);
     return response.data;
   },
 
   deleteSupermarket: async (id) => {
     const response = await api.delete(`/supermarkets/${id}`);
+    return response.data;
+  },
+
+  getAllSupermarkets: async () => {
+    const response = await api.get('/supermarkets/admin/all');
     return response.data;
   },
 };

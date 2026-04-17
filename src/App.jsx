@@ -24,7 +24,6 @@ import {
   AdminProducts,
   AdminSupermarkets,
   AdminAnalytics,
-  CustomerHome,
   CustomerProducts,
   CustomerSupermarkets,
   CustomerCart,
@@ -80,7 +79,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
     if (user?.role === 'vendor') return <Navigate to="/vendor/dashboard" replace />;
     if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
-    return <Navigate to="/customer" replace />;
+    return <Navigate to="/customer/products" replace />;
   }
 
   return children;
@@ -102,7 +101,7 @@ const PublicRoute = ({ children }) => {
   if (isAuthenticated) {
     if (user?.role === 'vendor') return <Navigate to="/vendor/dashboard" replace />;
     if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
-    return <Navigate to="/customer" replace />;
+    return <Navigate to="/customer/products" replace />;
   }
 
   return children;
@@ -144,7 +143,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<PageTransition><CustomerHome /></PageTransition>} />
+          <Route index element={<Navigate to="/customer/products" replace />} />
           <Route path="products" element={<PageTransition><CustomerProducts /></PageTransition>} />
           <Route path="products/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
           <Route path="supermarkets" element={<PageTransition><CustomerSupermarkets /></PageTransition>} />

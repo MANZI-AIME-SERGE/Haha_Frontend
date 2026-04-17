@@ -5,15 +5,12 @@ import { DashboardSkeleton } from '../../components/ui';
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await productService.getProducts().catch(() => ({ data: { products: [] } }));
-      setProducts(res.data.products || []);
+      const res = await productService.getAdminProducts();
+      setProducts(res.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
@@ -24,265 +21,176 @@ const AdminProducts = () => {
 
   useEffect(() => {
     fetchProducts();
+    const pollInterval = setInterval(fetchProducts, 15000);
+    return () => clearInterval(pollInterval);
   }, []);
 
-  const categories = ['all', 'Drinks', 'Foods', 'Hygiene', 'Vegetables', 'Other'];
+  const categories = ['Drinks', 'Foods', 'Hygiene', 'Vegetables', 'Other'];
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = 
-      product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.supermarketId?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const getCategoryBadge = (category) => {
-    const badges = {
-      'Drinks': 'bg-blue-100 text-blue-700',
-      'Foods': 'bg-orange-100 text-orange-700',
-      'Hygiene': 'bg-green-100 text-green-700',
-      'Vegetables': 'bg-emerald-100 text-emerald-700',
-      'Other': 'bg-gray-100 text-gray-700',
-    };
-    return badges[category] || 'bg-gray-100 text-gray-700';
+  const getCategoryCount = (category) => {
+    return products.filter(p => p.category === category).length;
   };
 
-  const getStockStatus = (stock) => {
-    if (stock === 0) return { label: 'Out of Stock', color: 'bg-red-100 text-red-700' };
-    if (stock <= 5) return { label: 'Low Stock', color: 'bg-yellow-100 text-yellow-700' };
-    return { label: 'In Stock', color: 'bg-green-100 text-green-700' };
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Drinks': { bg: 'bg-blue-100', text: 'text-blue-700', icon: 'bg-blue-500' },
+      'Foods': { bg: 'bg-orange-100', text: 'text-orange-700', icon: 'bg-orange-500' },
+      'Hygiene': { bg: 'bg-green-100', text: 'text-green-700', icon: 'bg-green-500' },
+      'Vegetables': { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: 'bg-emerald-500' },
+      'Other': { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'bg-gray-500' },
+    };
+    return colors[category] || { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'bg-gray-500' };
+  };
+
+  const inStockCount = products.filter(p => p.stock > 0).length;
+  const outOfStockCount = products.filter(p => p.stock === 0).length;
+  const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      'Drinks': (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+        </svg>
+      ),
+      'Foods': (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      ),
+      'Hygiene': (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        </svg>
+      ),
+      'Vegetables': (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+      ),
+      'Other': (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      ),
+    };
+    return icons[category] || icons['Other'];
   };
 
   if (loading) {
     return <DashboardSkeleton />;
   }
 
-  const inStockCount = products.filter(p => p.stock > 5).length;
-  const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= 5).length;
-  const outOfStockCount = products.filter(p => p.stock === 0).length;
-
   return (
     <div className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
-          <p className="text-gray-600 mt-1">Total products in system: <span className="font-semibold text-green-600">{products.length}</span></p>
+          <h1 className="text-3xl font-bold text-gray-900">Product Overview</h1>
+          <p className="text-gray-600 mt-1">Monitor all products across supermarkets</p>
         </div>
+        <button
+          onClick={fetchProducts}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium">Available Products</p>
+              <p className="text-4xl font-bold mt-2">{inStockCount}</p>
+              <p className="text-green-100 text-xs mt-1">In stock</p>
+            </div>
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{inStockCount}</p>
-              <p className="text-sm text-gray-500">In Stock</p>
-            </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-100 text-sm font-medium">Low Stock</p>
+              <p className="text-4xl font-bold mt-2">{lowStockCount}</p>
+              <p className="text-yellow-100 text-xs mt-1">Need restock soon</p>
+            </div>
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{lowStockCount}</p>
-              <p className="text-sm text-gray-500">Low Stock</p>
-            </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-red-100 text-sm font-medium">Out of Stock</p>
+              <p className="text-4xl font-bold mt-2">{outOfStockCount}</p>
+              <p className="text-red-100 text-xs mt-1">Needs attention</p>
+            </div>
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{outOfStockCount}</p>
-              <p className="text-sm text-gray-500">Out of Stock</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{products.length}</p>
-              <p className="text-sm text-gray-500">Total Products</p>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search by name, category, or supermarket..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+      {/* Total Products */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Products on Platform</p>
+            <p className="text-6xl font-bold text-gray-900 mt-2">{products.length}</p>
+            <p className="text-gray-400 text-sm mt-1">across all categories</p>
           </div>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {categories.map(cat => (
-              <option key={cat} value={cat}>
-                {cat === 'all' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.length === 0 ? (
-          <div className="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-            <p className="text-gray-500">No products found</p>
-          </div>
-        ) : (
-          filteredProducts.map((product) => {
-            const stockStatus = getStockStatus(product.stock);
+      {/* Category Overview */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Products by Category</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {categories.map((category) => {
+            const color = getCategoryColor(category);
+            const count = getCategoryCount(category);
             return (
-              <div 
-                key={product._id} 
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                onClick={() => setSelectedProduct(product)}
+              <div
+                key={category}
+                className={`p-6 rounded-xl border-2 ${color.bg} border-transparent`}
               >
-                <div className="relative h-40 bg-gray-100">
-                  <img
-                    src={product.image ? `http://localhost:5000${product.image}` : 'https://via.placeholder.com/300x200?text=No+Image'}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop';
-                    }}
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryBadge(product.category)}`}>
-                      {product.category}
-                    </span>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${stockStatus.color}`}>
-                      {stockStatus.label}
-                    </span>
-                  </div>
+                <div className={`w-12 h-12 ${color.icon} rounded-xl flex items-center justify-center mb-4 text-white`}>
+                  {getCategoryIcon(category)}
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-900 mb-1 truncate">{product.name}</h3>
-                  <p className="text-sm text-gray-500 mb-2 truncate">{product.supermarketId?.name || 'Unknown Store'}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-blue-600">RWF {product.price?.toLocaleString()}</span>
-                    <span className="text-sm text-gray-500">{product.stock} units</span>
-                  </div>
-                </div>
+                <p className="text-3xl font-bold text-gray-900">{count}</p>
+                <p className={`text-sm font-medium ${color.text} mt-1`}>{category}</p>
               </div>
             );
-          })
-        )}
+          })}
+        </div>
       </div>
 
-      {/* Product Details Modal */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
-            <button
-              onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/2">
-                <img
-                  src={selectedProduct.image ? `http://localhost:5000${selectedProduct.image}` : 'https://via.placeholder.com/400x300?text=No+Image'}
-                  alt={selectedProduct.name}
-                  className="w-full h-64 object-cover rounded-xl"
-                  onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop';
-                  }}
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryBadge(selectedProduct.category)}`}>
-                    {selectedProduct.category}
-                  </span>
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStockStatus(selectedProduct.stock).color}`}>
-                    {getStockStatus(selectedProduct.stock).label}
-                  </span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
-                <p className="text-3xl font-bold text-blue-600 mb-4">RWF {selectedProduct.price?.toLocaleString()}</p>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    <div>
-                      <p className="text-xs text-gray-500">Supermarket</p>
-                      <p className="text-sm font-medium text-gray-900">{selectedProduct.supermarketId?.name || 'Unknown Store'}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                    <div>
-                      <p className="text-xs text-gray-500">Stock Available</p>
-                      <p className="text-sm font-medium text-gray-900">{selectedProduct.stock} units</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                    </svg>
-                    <div>
-                      <p className="text-xs text-gray-500">Product ID</p>
-                      <p className="text-sm font-medium text-gray-900 font-mono">{selectedProduct._id}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Description</h3>
-              <p className="text-gray-600 leading-relaxed">{selectedProduct.description || 'No description available'}</p>
-            </div>
+      {/* Info Note */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="flex items-start gap-3">
+          <svg className="w-5 h-5 text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-gray-700">View Only Mode</p>
+            <p className="text-sm text-gray-500 mt-1">Product management (adding, editing, deleting) is handled by vendors in their own dashboard. This overview shows real-time statistics from all products across supermarkets.</p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
